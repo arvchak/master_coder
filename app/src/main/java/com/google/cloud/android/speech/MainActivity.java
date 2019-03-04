@@ -28,6 +28,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -120,8 +121,6 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         fragment = (ArFragment)
                 getSupportFragmentManager().findFragmentById(R.id.sceneform_fragment);
 
@@ -133,12 +132,22 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
     }
 
+    /**
+     * Function for calling executing the Translator Background Task
+     * @param textToBeTranslated The text to be translated
+     * @param languagePair The language pair for translation e.g. "en-de"; //English to German ("<source_language>-<target_language>")
+     */
+    void Translate(String textToBeTranslated, String languagePair) {
+        TranslatorBackgroundTask translatorBackgroundTask = new TranslatorBackgroundTask(this);
+        translatorBackgroundTask.execute(textToBeTranslated, languagePair); // Returns the translated text as a String
+        Log.d("Translation Result", ""); // Logs the result in Android Monitor
+    }
 
     private void addObject() {
         fragment.setOnTapArPlaneListener(new BaseArFragment.OnTapArPlaneListener() {
             @Override
             public void onTapPlane(HitResult hit, Plane plane, MotionEvent motionEvent) {
-                    placeObject(fragment, hit.createAnchor());
+                placeObject(fragment, hit.createAnchor());
             }
         });
 
@@ -339,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     if (isFinal) {
                         mVoiceRecorder.dismiss();
                     }
+
                     if (testViewRenderable.getView() != null && !TextUtils.isEmpty(text)) {
                         runOnUiThread(new Runnable() {
                             @Override
