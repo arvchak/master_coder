@@ -245,7 +245,7 @@ public class SpeechService extends Service {
     public void startRecognizing(int sampleRate) {
         ArrayList<String> languageList = new ArrayList<>();
         languageList.add("es-ES");
-        languageList.add("hi-IND");
+//        languageList.add("hi-IND");
         languageList.add("de-DE");
         if (mApi == null) {
             Log.w(TAG, "API not ready. Ignoring the request.");

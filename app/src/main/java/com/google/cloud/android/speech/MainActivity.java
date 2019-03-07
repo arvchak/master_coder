@@ -43,7 +43,6 @@ import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.rendering.DpToMetersViewSizer;
-import com.google.ar.sceneform.rendering.FixedHeightViewSizer;
 import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
@@ -53,7 +52,7 @@ import com.google.ar.sceneform.ux.TransformableNode;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements MessageDialogFragment.Listener {
+public class MainActivity extends AppCompatActivity implements MessageDialogFragment.Listener, TranslatorBackgroundTask.TranslatorCallback {
 
     private static final String FRAGMENT_MESSAGE_DIALOG = "message_dialog";
 
@@ -134,10 +133,10 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
 
     /**
      * Function for calling executing the Translator Background Task
-     * @param textToBeTranslated The text to be translated
-     * @param languagePair The language pair for translation e.g. "en-de"; //English to German ("<source_language>-<target_language>")
+     *  @param textToBeTranslated The text to be translated
+     * @param languagePair       The language pair for translation e.g. "en-de"; //English to German ("<source_language>-<target_language>")
      */
-    void Translate(String textToBeTranslated, String languagePair) {
+    void translate(String textToBeTranslated, String languagePair) {
         TranslatorBackgroundTask translatorBackgroundTask = new TranslatorBackgroundTask(this);
         translatorBackgroundTask.execute(textToBeTranslated, languagePair); // Returns the translated text as a String
         Log.d("Translation Result", ""); // Logs the result in Android Monitor
@@ -350,21 +349,24 @@ public class MainActivity extends AppCompatActivity implements MessageDialogFrag
                     }
 
                     if (testViewRenderable.getView() != null && !TextUtils.isEmpty(text)) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (isFinal) {
-                                    TextView view = (TextView) testViewRenderable.getView();
-                                    view.setText(text);
-                                } else {
-                                    TextView view = (TextView) testViewRenderable.getView();
-                                    view.append(" " + text);
-                                }
-                            }
-                        });
+
+                        if (isFinal)
+                            translate(text, "de-en");
+
                     }
                 }
             };
 
+
+    @Override
+    public void onSuccess(String convertedString) {
+        TextView view = (TextView) testViewRenderable.getView();
+        view.setText(convertedString);
+    }
+
+    @Override
+    public void onFailure() {
+
+    }
 
 }

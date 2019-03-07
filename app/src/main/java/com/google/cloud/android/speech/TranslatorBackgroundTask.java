@@ -1,7 +1,9 @@
 package com.google.cloud.android.speech;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.StringRes;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -15,9 +17,21 @@ import java.net.URL;
 public class TranslatorBackgroundTask extends AsyncTask<String, Void, String> {
     //Declare Context
     Context ctx;
+    private final TranslatorCallback callback;
+
+    public interface TranslatorCallback {
+        void onSuccess(String convertedString);
+
+        void onFailure();
+    }
+
     //Set Context
-    TranslatorBackgroundTask(Context ctx){
-        this.ctx = ctx;
+    TranslatorBackgroundTask(Activity context) {
+        this.ctx = context;
+        if (context == null) {
+            throw new IllegalArgumentException("The translator callback should not be null");
+        }
+        this.callback = (TranslatorCallback) context;
     }
 
     @Override
@@ -51,16 +65,8 @@ public class TranslatorBackgroundTask extends AsyncTask<String, Void, String> {
             inputStream.close();
             httpJsonConnection.disconnect();
 
-            //Making result human readable
-            String resultString = jsonStringBuilder.toString().trim();
-            //Getting the characters between [ and ]
-            resultString = resultString.substring(resultString.indexOf('[')+1);
-            resultString = resultString.substring(0,resultString.indexOf("]"));
-            //Getting the characters between " and "
-            resultString = resultString.substring(resultString.indexOf("\"")+1);
-            resultString = resultString.substring(0,resultString.indexOf("\""));
 
-            Log.d("Translation Result:", resultString);
+            Log.d("Translation Json Result:", jsonStringBuilder.toString());
             return jsonStringBuilder.toString().trim();
 
         } catch (MalformedURLException e) {
@@ -78,8 +84,22 @@ public class TranslatorBackgroundTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
+
+        if (result != null) {
+            //Making result human readable
+            String resultString = result.trim();
+            //Getting the characters between [ and ]
+            resultString = resultString.substring(resultString.indexOf('[') + 1);
+            resultString = resultString.substring(0, resultString.indexOf("]"));
+            //Getting the characters between " and "
+            resultString = resultString.substring(resultString.indexOf("\"") + 1);
+            resultString = resultString.substring(0, resultString.indexOf("\""));
+            callback.onSuccess(resultString);
+        } else {
+            callback.onFailure();
+        }
     }
-    
+
     @Override
     protected void onProgressUpdate(Void... values) {
         super.onProgressUpdate(values);
